@@ -1,7 +1,7 @@
 # https://cloud.google.com/sdk/gcloud/reference/run/deploy
 export GOOGLE_CLOUD_PROJECT=landing-zone-demo-341118
 gcloud config set project $GOOGLE_CLOUD_PROJECT
-export SERVICE_NAME=gcp-iai-ops
+export SERVICE_NAME=gcp-ai-ops
 export ARTIFACT_REGISTRY_NAME=cloud-run-source-deploy
 export REGION=europe-west4
 export SERVICE_ACCOUNT_EMAIL=experts-hub-demo@landing-zone-demo-341118.iam.gserviceaccount.com
