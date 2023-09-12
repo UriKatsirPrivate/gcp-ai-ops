@@ -6,7 +6,6 @@ from langchain.prompts.chat import (ChatPromptTemplate,
 from initialization import initialize_llm
 from prompts import PROMPT_IMPROVER_PROMPT
 
-
 st.sidebar.write("Project ID: landing-zone-demo-341118") 
 project_id="landing-zone-demo-341118"
 region=st.sidebar.selectbox("Please enter the region",['us-central1'])
@@ -88,7 +87,9 @@ with tab2:
             with st.spinner('Inspecting prompt...'):
                 inspection_result = securityInspector(prompt)
             st.text_area('Inspection Result', inspection_result, height=200, max_chars=None, key=None)
-            if inspection_result:
+            # print(inspection_result)
+            # if (inspection_result != "System: The prompt you provided does not contain any security issues."):
+            if ("does not contain any security issues" not in inspection_result):
                 with st.spinner('Creating Safe Prompt...'):
                     safe_prompt = safePromptSuggester(inspection_result)
                 displaySafePrompt(safe_prompt)
