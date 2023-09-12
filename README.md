@@ -1,8 +1,14 @@
-# 
+# GCP AI OPS
 
-## 
+## Variety of GCP related OPS services powered by VertexAI
 
-### see it in action 
+### See it in action [here](https://gcpaiops.cloud/)
+
+### Supported Operations
+* Improve prompt.
+* Inspect a prompt for security issues.
+* Create a gCloud CLI 
+* Create a terraform template
 
 ### How to use
 * Modify app.py:
@@ -12,6 +18,7 @@
       * The service account should have _Cloud Run Invoker_ and _Vertex AI User_ permissions.
     * Replace ARTIFACT_REGISTRY_NAME with your own.
     * Replace GOOGLE_CLOUD_PROJECT with your own.
+    * Replace SERVICE_NAME with your own.
 * Execute run-venv.sh to run the code locally.
 * Execute deploy.sh to deploy the code to Cloud Run.
 * When the service is running, modify values in the side bar for model name, max token output etc.
