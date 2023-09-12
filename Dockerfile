@@ -16,4 +16,4 @@ ENV SYSTEM_VERSION_COMPAT=1
 # Install required libraries
 RUN pip3 install -r requirements.txt
 
-ENTRYPOINT ["streamlit", "run", "first.py", "--server.port=8080", "--server.address=0.0.0.0"]
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8080", "--server.address=0.0.0.0"]
