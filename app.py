@@ -16,8 +16,17 @@ temperature = st.sidebar.number_input('Enter temperature',min_value=0.0,max_valu
 top_p = st.sidebar.number_input('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
 top_k = st.sidebar.number_input('Enter top_k',min_value=1,max_value=40,step=1,value=40)
 
-# tab1, tab2, tab3, tab4= st.tabs(["Generate CLI Commands", "Inspect My Prompt","Generate Terraform","Improve Prompt"])
+css = '''
+<style>
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+    font-size:1.15rem;
+    }
+</style>
+'''
+st.markdown(css, unsafe_allow_html=True)
 tab1, tab2, tab3, tab4= st.tabs(["Improve Prompt", "Inspect My Prompt","Generate CLI Commands","Generate Terraform"])
+
+import streamlit as st
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
