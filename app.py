@@ -16,40 +16,34 @@ temperature = st.sidebar.number_input('Enter temperature',min_value=0.0,max_valu
 top_p = st.sidebar.number_input('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
 top_k = st.sidebar.number_input('Enter top_k',min_value=1,max_value=40,step=1,value=40)
 
-tab1, tab2, tab3, tab4= st.tabs(["Generate CLI Commands", "Inspect My Prompt","Generate Terraform","Improve Prompt"])
+# tab1, tab2, tab3, tab4= st.tabs(["Generate CLI Commands", "Inspect My Prompt","Generate Terraform","Improve Prompt"])
+tab1, tab2, tab3, tab4= st.tabs(["Improve Prompt", "Inspect My Prompt","Generate CLI Commands","Generate Terraform"])
+
+llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
+
 
 with tab1:
-    def gcpCliCommandGenerator(user_input):
+    # st.markdown("""## Prompt Improver:""")
+    # initial_prompt = st.text_input(label="Prompt Input", label_visibility='collapsed', placeholder="Generate a workout schedule", key="prompt_input")
+    initial_prompt = st.text_area("Please enter your prompt here:",height=200, max_chars=None, key=None)
     
-        llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
-        
-        system_template = """You are a virtual assistant capable of generating the corresponding Google Cloud Platform (GCP) command-line interface (CLI) command based on the user's input."""
-        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """The user's input is: '{user_input}'. Please generate the corresponding GCP CLI command."""
-        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_message_prompt, human_message_prompt]
-        )
+    # Initialize LLM
+    # llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
+            
+    # Initialize LLMChain
+    prompt_improver_chain = LLMChain(llm=llm, prompt=PROMPT_IMPROVER_PROMPT)
 
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(user_input=user_input)
-        return result # returns string
-    
-    def display_gcp_command(gcp_command):
-        if gcp_command != "":
-            st.markdown(f"**Generated GCP CLI Command:** {gcp_command}")
+    # Run LLMChain
+    if st.button('Generate Improved Prompt',disabled=not (project_id) or not (initial_prompt)):
+        if initial_prompt:
+            with st.spinner("Generating Improved Prompt..."):
+                improved_prompt = prompt_improver_chain.run(initial_prompt)
+                st.markdown("""
+                                ## Improved Prompt:
+                                """)
+                st.code(improved_prompt)
         else:
-            st.markdown("No command generated. Please enter a valid GCP operation.")
-
-    user_input = st.text_input("Please enter the desired GCP operation")
-
-    if st.button('Generate GCP CLI Command',disabled=not (project_id)):
-        if user_input:
-            with st.spinner('Generating command...'):
-                gcp_command = gcpCliCommandGenerator(user_input)
-            display_gcp_command(gcp_command)
-        else:
-            st.markdown("No command generated. Please enter a valid GCP operation.")
+            st.error(f"Please provide a prompt")
 with tab2:
     def securityInspector(prompt):
     
@@ -69,7 +63,7 @@ with tab2:
     
     def safePromptSuggester(inspection_result):
 
-        llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
+        # llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
         system_template = """You are an AI assistant designed to suggest a modified, safe prompt if security issues are found in the original prompt."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
@@ -102,8 +96,40 @@ with tab2:
         else:
             st.markdown("Please enter a prompt.")
 with tab3:
+    def gcpCliCommandGenerator(user_input):
+    
+        # llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
+        
+        system_template = """You are a virtual assistant capable of generating the corresponding Google Cloud Platform (GCP) command-line interface (CLI) command based on the user's input."""
+        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
+        human_template = """The user's input is: '{user_input}'. Please generate the corresponding GCP CLI command."""
+        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
+        )
+
+        chain = LLMChain(llm=llm, prompt=chat_prompt)
+        result = chain.run(user_input=user_input)
+        return result # returns string
+    
+    def display_gcp_command(gcp_command):
+        if gcp_command != "":
+            st.markdown(f"**Generated GCP CLI Command:** {gcp_command}")
+        else:
+            st.markdown("No command generated. Please enter a valid GCP operation.")
+
+    user_input = st.text_area("Please enter the desired GCP operation",height=200, max_chars=None, key=None)
+
+    if st.button('Generate GCP CLI Command',disabled=not (project_id)):
+        if user_input:
+            with st.spinner('Generating command...'):
+                gcp_command = gcpCliCommandGenerator(user_input)
+            display_gcp_command(gcp_command)
+        else:
+            st.markdown("No command generated. Please enter a valid GCP operation.")
+with tab4:
     def terraformGenerator(description):
-        llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
+        # llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
         system_template = """You are a terraform expert capable of generating Terraform files based on the user's description."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
@@ -122,7 +148,7 @@ with tab3:
         else:
             st.markdown("No Terraform files generated. Please provide a valid description.")        
 
-    description = st.text_area("Please enter the description of the desired architecture on GCP")
+    description = st.text_area("Please enter the description of the desired architecture on GCP",height=200, max_chars=None, key=None)
     if st.button('Generate Terraform Files'):
 
         if description:
@@ -133,25 +159,3 @@ with tab3:
     else:
         terraform_files = ""
         display_terraform_files(terraform_files)
-with tab4:
-    st.markdown("""## Prompt Improver:""")
-    # initial_prompt = st.text_input(label="Prompt Input", label_visibility='collapsed', placeholder="Generate a workout schedule", key="prompt_input")
-    initial_prompt = st.text_input("Please enter your prompt here:")
-
-    # Initialize LLM
-    llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
-            
-    # Initialize LLMChain
-    prompt_improver_chain = LLMChain(llm=llm, prompt=PROMPT_IMPROVER_PROMPT)
-
-    # Run LLMChain
-    if st.button('Generate Improved Prompt',disabled=not (project_id) or not (initial_prompt)):
-        if initial_prompt:
-            with st.spinner("Generating Improved Prompt..."):
-                improved_prompt = prompt_improver_chain.run(initial_prompt)
-                st.markdown("""
-                                ## Improved Prompt:
-                                """)
-                st.code(improved_prompt)
-        else:
-            st.error(f"Please provide a prompt")
