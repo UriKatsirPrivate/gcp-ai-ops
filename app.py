@@ -24,7 +24,7 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4= st.tabs(["Improve Prompt", "Inspect My Prompt","Generate CLI Commands","Generate Terraform"])
+tab1, tab2, tab3, tab4= st.tabs(["Improve Prompt / ", "Inspect My Prompt / ","Generate CLI Commands / ","Generate Terraform"])
 
 import streamlit as st
 
@@ -33,17 +33,14 @@ llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,t
 
 with tab1:
     # st.markdown("""## Prompt Improver:""")
-    # initial_prompt = st.text_input(label="Prompt Input", label_visibility='collapsed', placeholder="Generate a workout schedule", key="prompt_input")
-    initial_prompt = st.text_area("Please enter your prompt here:",height=200, max_chars=None, key=None)
+    initial_prompt = st.text_area("Please enter your prompt here:", height=200,max_chars=None, key=None)
     
-    # Initialize LLM
-    # llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
-            
     # Initialize LLMChain
     prompt_improver_chain = LLMChain(llm=llm, prompt=PROMPT_IMPROVER_PROMPT)
 
     # Run LLMChain
-    if st.button('Generate Improved Prompt',disabled=not (project_id) or not (initial_prompt)):
+    # if st.button('Generate Improved Prompt',disabled=not (project_id) or not (initial_prompt)):
+    if st.button('Generate Improved Prompt',disabled=not (project_id)):
         if initial_prompt:
             with st.spinner("Generating Improved Prompt..."):
                 improved_prompt = prompt_improver_chain.run(initial_prompt)
@@ -92,7 +89,7 @@ with tab2:
             st.markdown("No modifications needed.")
                     
     prompt=st.text_area("Enter your prompt",height=200, max_chars=None, key=None)
-    if st.button('Inspect and Modify Prompt'):
+    if st.button('Inspect and Modify Prompt',disabled=not (project_id)):
         if prompt:
             with st.spinner('Inspecting prompt...'):
                 inspection_result = securityInspector(prompt)
@@ -158,7 +155,7 @@ with tab4:
             st.markdown("No Terraform files generated. Please provide a valid description.")        
 
     description = st.text_area("Please enter the description of the desired architecture on GCP",height=200, max_chars=None, key=None)
-    if st.button('Generate Terraform Files'):
+    if st.button('Generate Terraform Files',disabled=not (project_id)):
 
         if description:
             terraform_files = terraformGenerator(description)
@@ -167,4 +164,4 @@ with tab4:
             st.markdown("No description provided. Please enter a valid description.")
     else:
         terraform_files = ""
-        display_terraform_files(terraform_files)
+        # display_terraform_files(terraform_files)
