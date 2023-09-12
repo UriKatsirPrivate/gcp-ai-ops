@@ -26,13 +26,9 @@ css = '''
 st.markdown(css, unsafe_allow_html=True)
 tab1, tab2, tab3, tab4= st.tabs(["Improve Prompt / ", "Inspect My Prompt / ","Generate CLI Commands / ","Generate Terraform"])
 
-import streamlit as st
-
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
-
 with tab1:
-    # st.markdown("""## Prompt Improver:""")
     initial_prompt = st.text_area("Please enter your prompt here:", height=200,max_chars=None, key=None)
     
     # Initialize LLMChain
@@ -45,7 +41,7 @@ with tab1:
             with st.spinner("Generating Improved Prompt..."):
                 improved_prompt = prompt_improver_chain.run(initial_prompt)
                 st.markdown("""
-                                ## Improved Prompt:
+                                ### Improved Prompt:
                                 """)
                 st.code(improved_prompt)
         else:
@@ -68,8 +64,6 @@ with tab2:
         return result # returns string
     
     def safePromptSuggester(inspection_result):
-
-        # llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
         system_template = """You are an AI assistant designed to suggest a modified, safe prompt if security issues are found in the original prompt."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
@@ -94,7 +88,6 @@ with tab2:
             with st.spinner('Inspecting prompt...'):
                 inspection_result = securityInspector(prompt)
             st.text_area('Inspection Result', inspection_result, height=200, max_chars=None, key=None)
-            # print("inspection_result= " + inspection_result)
             if inspection_result:
                 with st.spinner('Creating Safe Prompt...'):
                     safe_prompt = safePromptSuggester(inspection_result)
@@ -104,8 +97,6 @@ with tab2:
 with tab3:
     def gcpCliCommandGenerator(user_input):
     
-        # llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
-        
         system_template = """You are a virtual assistant capable of generating the corresponding Google Cloud Platform (GCP) command-line interface (CLI) command based on the user's input."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
         human_template = """The user's input is: '{user_input}'. Please generate the corresponding GCP CLI command."""
@@ -120,7 +111,10 @@ with tab3:
     
     def display_gcp_command(gcp_command):
         if gcp_command != "":
-            st.markdown(f"**Generated GCP CLI Command:** {gcp_command}")
+            # st.markdown(f"**Generated GCP CLI Command:** {gcp_command}")
+            st.markdown(f"**Generated GCP CLI Command:")
+            st.code(gcp_command)
+
         else:
             st.markdown("No command generated. Please enter a valid GCP operation.")
 
@@ -135,8 +129,7 @@ with tab3:
             st.markdown("No command generated. Please enter a valid GCP operation.")
 with tab4:
     def terraformGenerator(description):
-        # llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
-
+    
         system_template = """You are a terraform expert capable of generating Terraform files based on the user's description."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
         human_template = """The user's description is: '{description}'. Please generate the appropriate Terraform files based on this description."""
@@ -150,7 +143,9 @@ with tab4:
         return result # returns string
     def display_terraform_files(terraform_files):
         if terraform_files:
-            st.markdown(f"### Generated Terraform Files: \n {terraform_files}")
+            # st.markdown(f"### Generated Terraform Files: \n {terraform_files}")
+            st.markdown(f"### Generated Terraform Files:")
+            st.code(terraform_files)
         else:
             st.markdown("No Terraform files generated. Please provide a valid description.")        
 
