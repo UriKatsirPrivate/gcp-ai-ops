@@ -4,7 +4,6 @@ python3 -m pip install --upgrade pip
 export SYSTEM_VERSION_COMPAT=1
 pip3 install -r requirements.txt
 # streamlit run ./prompt_generator/prompt_generator_streamlit.py
-streamlit run first.py
+streamlit run app.py
 # deactivate
 # rm -rf myenv
-
