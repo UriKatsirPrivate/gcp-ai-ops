@@ -13,7 +13,7 @@
 
 ### How to use
 * Modify app.py:
-  * Replace project_id with your project ID. 
+  * Replace _PROJECT_ID_ with your project ID. 
 * Modify deploy.sh:
     * Replace SERVICE_ACCOUNT_EMAIL with your own service account. 
       * The service account should have _Cloud Run Invoker_ and _Vertex AI User_ permissions.
