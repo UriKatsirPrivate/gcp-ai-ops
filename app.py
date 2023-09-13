@@ -6,10 +6,14 @@ from langchain.prompts.chat import (ChatPromptTemplate,
 from initialization import initialize_llm
 from prompts import PROMPT_IMPROVER_PROMPT
 
-st.sidebar.write("Project ID: landing-zone-demo-341118") 
-project_id="landing-zone-demo-341118"
-region=st.sidebar.selectbox("Please enter the region",['us-central1'])
-model_name = st.sidebar.selectbox('Enter model name',['text-bison','text-bison-32k','code-bison','code-bison-32k'])
+PROJECT_ID="landing-zone-demo-341118"
+REGIONS=["us-central1"]
+MODEL_NAME=['text-bison','text-bison-32k','code-bison','code-bison-32k']
+
+st.sidebar.write("Project ID: ",f"{PROJECT_ID}") 
+project_id=PROJECT_ID
+region=st.sidebar.selectbox("Please enter the region",REGIONS)
+model_name = st.sidebar.selectbox('Enter model name',MODEL_NAME)
 max_tokens = st.sidebar.number_input('Enter max token output',min_value=1,max_value=8192,step=100,value=1024)
 temperature = st.sidebar.number_input('Enter temperature',min_value=0.0,max_value=1.0,step=0.1,value=0.1)
 top_p = st.sidebar.number_input('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
