@@ -7,8 +7,9 @@
 ### Supported Operations
 * Improve prompt.
 * Inspect a prompt for security issues.
-* Create a gCloud CLI 
-* Create a terraform template
+* Run the prompt.
+* Create a gCloud CLI command.
+* Create a terraform template.
 
 ### How to use
 * Modify app.py:
@@ -19,8 +20,8 @@
     * Replace ARTIFACT_REGISTRY_NAME with your own.
     * Replace GOOGLE_CLOUD_PROJECT with your own.
     * Replace SERVICE_NAME with your own.
-* Execute run-venv.sh to run the code locally.
-* Execute deploy.sh to deploy the code to Cloud Run.
+* Execute _run-venv.sh_ to run the code locally.
+* Execute _deploy.sh_ to deploy the code to Cloud Run.
 * When the service is running, modify values in the side bar for model name, max token output etc.
 
 #### To-Do
