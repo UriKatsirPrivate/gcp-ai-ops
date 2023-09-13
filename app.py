@@ -23,12 +23,12 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4= st.tabs(["Improve Prompt / ", "Inspect My Prompt / ","Generate CLI Commands / ","Generate Terraform"])
+tab1, tab2, tab3, tab4, tab5= st.tabs(["Improve Prompt / ", "Inspect My Prompt / ","Run My Prompt / ", "Generate gCloud Commands / ","Generate Terraform"])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
 with tab1:
-    initial_prompt = st.text_area("Please enter your prompt here:", height=200,max_chars=None, key=None)
+    initial_prompt = st.text_area("Enter your prompt:", height=200,max_chars=None, key=1)
     
     # Initialize LLMChain
     prompt_improver_chain = LLMChain(llm=llm, prompt=PROMPT_IMPROVER_PROMPT)
@@ -81,7 +81,7 @@ with tab2:
         else:
             st.markdown("No modifications needed.")
                     
-    prompt=st.text_area("Enter your prompt",height=200, max_chars=None, key=None)
+    prompt=st.text_area("Enter your prompt:",height=200, max_chars=None, key=None)
     if st.button('Inspect and Modify Prompt',disabled=not (project_id)):
         if prompt:
             with st.spinner('Inspecting prompt...'):
@@ -96,6 +96,39 @@ with tab2:
         else:
             st.markdown("Please enter a prompt.")
 with tab3:
+    def promptExecutor(prompt):
+    
+        system_template = """You are an AI assistant designed to execute the given prompt: '{prompt}'."""
+        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
+        human_template = """Please execute the following prompt: '{prompt}'."""
+        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
+        )
+
+        chain = LLMChain(llm=llm, prompt=chat_prompt)
+        result = chain.run(prompt=prompt)
+        return result # returns string   
+
+    def display_result(execution_result):
+        if execution_result != "":
+            # st.markdown(f"**Execution Result:** {execution_result}")
+            st.code(execution_result)
+        else:
+            st.warning('No result to display.')
+
+    #Get the prompt from the user
+    prompt = st.text_area('Enter your prompt:',height=200, max_chars=None, key=3)
+    
+    if st.button('Execute Prompt'):
+        if prompt:
+            execution_result = promptExecutor(prompt)
+            display_result(execution_result)
+        else:
+            st.warning('Please enter a prompt before executing.')
+        
+
+with tab4:
     def gcpCliCommandGenerator(user_input):
     
         system_template = """You are a virtual assistant capable of generating the corresponding Google Cloud Platform (GCP) command-line interface (CLI) command based on the user's input."""
@@ -119,7 +152,7 @@ with tab3:
         else:
             st.markdown("No command generated. Please enter a valid GCP operation.")
 
-    user_input = st.text_area("Please enter the desired GCP operation",height=200, max_chars=None, key=None)
+    user_input = st.text_area("Enter the desired GCP operation:",height=200, max_chars=None, key=None)
 
     if st.button('Generate GCP CLI Command',disabled=not (project_id)):
         if user_input:
@@ -128,7 +161,7 @@ with tab3:
             display_gcp_command(gcp_command)
         else:
             st.markdown("No command generated. Please enter a valid GCP operation.")
-with tab4:
+with tab5:
     def terraformGenerator(description):
     
         system_template = """You are a terraform expert capable of generating Terraform files based on the user's description."""
@@ -150,7 +183,7 @@ with tab4:
         else:
             st.markdown("No Terraform files generated. Please provide a valid description.")        
 
-    description = st.text_area("Please enter the description of the desired architecture on GCP",height=200, max_chars=None, key=None)
+    description = st.text_area("Enter the description of the desired architecture on GCP:",height=200, max_chars=None, key=None)
     if st.button('Generate Terraform Files',disabled=not (project_id)):
 
         if description:
