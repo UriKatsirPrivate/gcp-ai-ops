@@ -26,16 +26,16 @@ langsmith_endpoint = st.sidebar.text_input(label="Langsmith Endpoint", value="ht
 langsmith_project = st.sidebar.text_input(label="Langsmith Project", value="GCP AI OPS", disabled=not tracing)
 # langsmith_key = get_from_secrets_manager("langchain-api-key", PROJECT_ID, "")
 
-# initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
+initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
 
 if tracing:
     tracing=True
     os.environ["LANGCHAIN_TRACING_V2"]="True"
-    initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
+    # initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
 else:
     tracing=False
     os.environ["LANGCHAIN_TRACING_V2"]="False"
-    initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
+    # initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
 
 
 
