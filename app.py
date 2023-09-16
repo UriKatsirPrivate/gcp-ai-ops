@@ -8,6 +8,7 @@ from initialization import initialize_llm, initialize_tracing
 from prompts import PROMPT_IMPROVER_PROMPT
 
 PROJECT_ID="landing-zone-demo-341118"
+LANGSMITH_KEY_NAME="langchain-api-key"
 REGIONS=["us-central1"]
 MODEL_NAMES=['text-bison','text-bison-32k','code-bison','code-bison-32k']
 
@@ -26,7 +27,7 @@ langsmith_endpoint = st.sidebar.text_input(label="Langsmith Endpoint", value="ht
 langsmith_project = st.sidebar.text_input(label="Langsmith Project", value="GCP AI OPS", disabled=not tracing)
 # langsmith_key = get_from_secrets_manager("langchain-api-key", PROJECT_ID, "")
 
-initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
+initialize_tracing(tracing,langsmith_endpoint,langsmith_project,PROJECT_ID,LANGSMITH_KEY_NAME)
 
 if tracing:
     tracing=True
