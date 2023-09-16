@@ -1,9 +1,10 @@
+import os
 import streamlit as st
 from langchain import LLMChain
 from langchain.prompts.chat import (ChatPromptTemplate,
                                     HumanMessagePromptTemplate,
                                     SystemMessagePromptTemplate)
-from initialization import initialize_llm
+from initialization import *
 from prompts import PROMPT_IMPROVER_PROMPT
 
 PROJECT_ID="landing-zone-demo-341118"
@@ -18,6 +19,32 @@ max_tokens = st.sidebar.number_input('Enter max token output',min_value=1,max_va
 temperature = st.sidebar.number_input('Enter temperature',min_value=0.0,max_value=1.0,step=0.1,value=0.1)
 top_p = st.sidebar.number_input('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
 top_k = st.sidebar.number_input('Enter top_k',min_value=1,max_value=40,step=1,value=40)
+tracing =""
+langsmith_endpoint=""
+langsmith_key=""
+langsmith_project=""
+langsmith_key=get_from_secrets_manager("langchain-api-key",PROJECT_ID,langsmith_key)
+
+
+# def configure_tracing(tracing):
+#     print("tracing = " + str(tracing))
+#     initialize_tracing(tracing,langsmith_endpoint,langsmith_key,langsmith_project)
+
+tracing = st.sidebar.toggle('Enable Langsmith Tracing')
+# langsmith_key=get_from_secrets_manager("langchain-api-key",PROJECT_ID)
+langsmith_endpoint=st.sidebar.text_input(label="Langsmith Endpoint",value="https://api.smith.langchain.com",disabled=not tracing)
+langsmith_project=st.sidebar.text_input(label="Langsmith Project",value="GCP AI OPS",disabled=not tracing)
+
+if tracing:
+    tracing=True
+    # st.sidebar.write("Tracing Enabled")
+    # print("key= " + str(langsmith_key))
+    initialize_tracing(tracing,langsmith_endpoint,langsmith_key,langsmith_project)
+    # st.sidebar.write("Tracing Enabled")
+else:
+    tracing=False
+    initialize_tracing(tracing,langsmith_endpoint,langsmith_key,langsmith_project)
+    # st.sidebar.write("Tracing Disabled")
 
 css = '''
 <style>
@@ -30,6 +57,7 @@ st.markdown(css, unsafe_allow_html=True)
 tab1, tab2, tab3, tab4, tab5= st.tabs(["Improve Prompt / ", "Inspect My Prompt / ","Run My Prompt / ", "Generate gCloud Commands / ","Generate Terraform"])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
+
 
 with tab1:
     initial_prompt = st.text_area("Enter your prompt:", height=200,max_chars=None, key=1)

@@ -3,3 +3,4 @@ watchdog==3.0.0
 streamlit==1.26.0
 langchain==0.0.285
 google-cloud-aiplatform[preview]
+google-cloud-secret-manager==2.16.2
