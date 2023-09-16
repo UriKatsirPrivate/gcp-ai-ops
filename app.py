@@ -4,7 +4,7 @@ from langchain import LLMChain
 from langchain.prompts.chat import (ChatPromptTemplate,
                                     HumanMessagePromptTemplate,
                                     SystemMessagePromptTemplate)
-from initialization import *
+from initialization import initialize_llm, initialize_tracing
 from prompts import PROMPT_IMPROVER_PROMPT
 
 PROJECT_ID="landing-zone-demo-341118"
@@ -19,32 +19,25 @@ max_tokens = st.sidebar.number_input('Enter max token output',min_value=1,max_va
 temperature = st.sidebar.number_input('Enter temperature',min_value=0.0,max_value=1.0,step=0.1,value=0.1)
 top_p = st.sidebar.number_input('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
 top_k = st.sidebar.number_input('Enter top_k',min_value=1,max_value=40,step=1,value=40)
-tracing =""
-langsmith_endpoint=""
-langsmith_key=""
-langsmith_project=""
-langsmith_key=get_from_secrets_manager("langchain-api-key",PROJECT_ID,langsmith_key)
 
-
-# def configure_tracing(tracing):
-#     print("tracing = " + str(tracing))
-#     initialize_tracing(tracing,langsmith_endpoint,langsmith_key,langsmith_project)
-
+# Initialize tracing variables
 tracing = st.sidebar.toggle('Enable Langsmith Tracing')
-# langsmith_key=get_from_secrets_manager("langchain-api-key",PROJECT_ID)
-langsmith_endpoint=st.sidebar.text_input(label="Langsmith Endpoint",value="https://api.smith.langchain.com",disabled=not tracing)
-langsmith_project=st.sidebar.text_input(label="Langsmith Project",value="GCP AI OPS",disabled=not tracing)
+langsmith_endpoint = st.sidebar.text_input(label="Langsmith Endpoint", value="https://api.smith.langchain.com", disabled=not tracing)
+langsmith_project = st.sidebar.text_input(label="Langsmith Project", value="GCP AI OPS", disabled=not tracing)
+# langsmith_key = get_from_secrets_manager("langchain-api-key", PROJECT_ID, "")
+
+# initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
 
 if tracing:
     tracing=True
-    # st.sidebar.write("Tracing Enabled")
-    # print("key= " + str(langsmith_key))
-    initialize_tracing(tracing,langsmith_endpoint,langsmith_key,langsmith_project)
-    # st.sidebar.write("Tracing Enabled")
+    os.environ["LANGCHAIN_TRACING_V2"]="True"
+    initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
 else:
     tracing=False
-    initialize_tracing(tracing,langsmith_endpoint,langsmith_key,langsmith_project)
-    # st.sidebar.write("Tracing Disabled")
+    os.environ["LANGCHAIN_TRACING_V2"]="False"
+    initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
+
+
 
 css = '''
 <style>
