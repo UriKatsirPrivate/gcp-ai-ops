@@ -21,24 +21,22 @@ temperature = st.sidebar.number_input('Enter temperature',min_value=0.0,max_valu
 top_p = st.sidebar.number_input('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
 top_k = st.sidebar.number_input('Enter top_k',min_value=1,max_value=40,step=1,value=40)
 
+
 # Initialize tracing variables
 tracing = st.sidebar.toggle('Enable Langsmith Tracing')
 langsmith_endpoint = st.sidebar.text_input(label="Langsmith Endpoint", value="https://api.smith.langchain.com", disabled=not tracing)
 langsmith_project = st.sidebar.text_input(label="Langsmith Project", value="GCP AI OPS", disabled=not tracing)
-# langsmith_key = get_from_secrets_manager("langchain-api-key", PROJECT_ID, "")
 
-initialize_tracing(tracing,langsmith_endpoint,langsmith_project,PROJECT_ID,LANGSMITH_KEY_NAME)
+# Check if initialize_tracing() has already been called
+if 'tracing_initialized' not in st.session_state:
+    initialize_tracing(tracing,langsmith_endpoint,langsmith_project,PROJECT_ID,LANGSMITH_KEY_NAME)
+    # Set the flag to indicate that initialize_tracing() has been called
+    st.session_state.tracing_initialized = True
 
 if tracing:
-    tracing=True
     os.environ["LANGCHAIN_TRACING_V2"]="True"
-    # initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
 else:
-    tracing=False
     os.environ["LANGCHAIN_TRACING_V2"]="False"
-    # initialize_tracing(tracing,langsmith_endpoint,langsmith_project)
-
-
 
 css = '''
 <style>

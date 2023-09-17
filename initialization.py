@@ -1,7 +1,6 @@
 import os
 from langchain.llms import VertexAI
 from google.cloud import secretmanager
-import streamlit as st
 
 # Initialize LLM
 def initialize_llm(project_id,region,model_name,max_output_tokens,temperature,top_p,top_k):
