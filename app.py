@@ -46,7 +46,11 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4, tab5, tab6= st.tabs(["Improve Prompt / ", "Inspect My Prompt / ","Run My Prompt / ", "Generate gCloud Commands / ","Generate Terraform","Secure Terraform"])
+tab1, tab2, tab3, tab4, tab5, tab6= st.tabs(["Improve Prompt / "
+                                             , "Inspect My Prompt / "
+                                             ,"Run My Prompt / "
+                                             , "Generate gCloud Commands / "
+                                             ,"Generate Terraform /","Secure Terraform"])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
@@ -233,13 +237,14 @@ with tab6:
     def display_vulnerabilities(vulnerabilities):
         if vulnerabilities:
             st.markdown(f"**Vulnerabilities Found:** {vulnerabilities}")
+            # st.code(vulnerabilities)
         else:
             st.markdown("No vulnerabilities found.")   
     
     description = st.text_area("Enter Terraform:",height=200, max_chars=None, key=None)
     if st.button('Scan',disabled=not (project_id)):
         if description:
-            with st.spinner('Generating command...'):
+            with st.spinner('Scanning for vulnerabilities...'):
                 gcp_command = terraformScanner(description)
             display_vulnerabilities(gcp_command)
         else:

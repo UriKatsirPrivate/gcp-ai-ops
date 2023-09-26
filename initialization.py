@@ -29,7 +29,7 @@ def get_from_secrets_manager(secret_name,gcp_project):
     # if langsmith_key:
     #     return langsmith_key
 
-    print("token")
+    # print("token")
     client = secretmanager.SecretManagerServiceClient()
 
     # name = f"projects/{PROJECT_ID}/secrets/langchain-api-key/versions/1"
