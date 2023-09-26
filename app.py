@@ -50,7 +50,8 @@ tab1, tab2, tab3, tab4, tab5, tab6= st.tabs(["Improve Prompt / "
                                              , "Inspect My Prompt / "
                                              ,"Run My Prompt / "
                                              , "Generate gCloud Commands / "
-                                             ,"Generate Terraform /","Secure Terraform"])
+                                             ,"Generate Terraform /"
+                                             ,"Secure Commands"])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
@@ -223,9 +224,9 @@ with tab5:
 with tab6:
     def terraformScanner(module_string):
         
-        system_template = """You are a security assistant designed to scan for vulnerabilities in the provided terraform module string content."""
+        system_template = """You are a security assistant designed to scan for vulnerabilities in the provided terraform module or gcloud commands string content."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """Please scan the following terraform module string for any potential vulnerabilities: '{module_string}'."""
+        human_template = """Please scan the following terraform module gcloud commands string for any potential vulnerabilities: '{module_string}'."""
         human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_message_prompt, human_message_prompt]
