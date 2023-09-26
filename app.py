@@ -46,7 +46,7 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4, tab5= st.tabs(["Improve Prompt / ", "Inspect My Prompt / ","Run My Prompt / ", "Generate gCloud Commands / ","Generate Terraform"])
+tab1, tab2, tab3, tab4, tab5, tab6= st.tabs(["Improve Prompt / ", "Inspect My Prompt / ","Run My Prompt / ", "Generate gCloud Commands / ","Generate Terraform","Secure Terraform"])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
@@ -216,3 +216,31 @@ with tab5:
     else:
         terraform_files = ""
         # display_terraform_files(terraform_files)
+with tab6:
+    def terraformScanner(module_string):
+        
+        system_template = """You are a security assistant designed to scan for vulnerabilities in the provided terraform module string content."""
+        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
+        human_template = """Please scan the following terraform module string for any potential vulnerabilities: '{module_string}'."""
+        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
+        )
+
+        chain = LLMChain(llm=llm, prompt=chat_prompt)
+        result = chain.run(module_string=module_string)
+        return result # returns string
+    def display_vulnerabilities(vulnerabilities):
+        if vulnerabilities:
+            st.markdown(f"**Vulnerabilities Found:** {vulnerabilities}")
+        else:
+            st.markdown("No vulnerabilities found.")   
+    
+    description = st.text_area("Enter Terraform:",height=200, max_chars=None, key=None)
+    if st.button('Scan',disabled=not (project_id)):
+        if description:
+            with st.spinner('Generating command...'):
+                gcp_command = terraformScanner(description)
+            display_vulnerabilities(gcp_command)
+        else:
+            st.markdown("No command generated. Please enter a valid GCP operation.")
