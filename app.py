@@ -7,6 +7,18 @@ from langchain.prompts.chat import (ChatPromptTemplate,
 from initialization import initialize_llm, initialize_tracing
 from prompts import PROMPT_IMPROVER_PROMPT
 
+st.set_page_config(
+    page_title="GCP AI Ops",
+    page_icon="icons/vertexai.png",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get help': 'https://cloud.google.com/vertex-ai?hl=en',
+        # 'About': "# This is a header. This is an *extremely* cool app!"
+        'About': "#### Created by [Uri Katsir](https://www.linkedin.com/in/uri-katsir/)"
+    }
+)
+
 PROJECT_ID="landing-zone-demo-341118"
 LANGSMITH_KEY_NAME="langchain-api-key"
 REGIONS=["us-central1"]
