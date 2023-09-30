@@ -2,7 +2,7 @@
 
 ## Variety of GCP related OPS services powered by VertexAI
 
-### See it in action [here](https://gcpaiops.cloud/)
+### See it in action [here](https://gcpaiops.xyz/)
 
 ### Supported Operations
 * Improve prompt.
