@@ -28,11 +28,13 @@ st.sidebar.write("Project ID: ",f"{PROJECT_ID}")
 project_id=PROJECT_ID
 region=st.sidebar.selectbox("Please enter the region",REGIONS)
 model_name = st.sidebar.selectbox('Enter model name',MODEL_NAMES)
-max_tokens = st.sidebar.number_input('Enter max token output',min_value=1,max_value=8192,step=100,value=1024)
-temperature = st.sidebar.number_input('Enter temperature',min_value=0.0,max_value=1.0,step=0.1,value=0.1)
-top_p = st.sidebar.number_input('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
-top_k = st.sidebar.number_input('Enter top_k',min_value=1,max_value=40,step=1,value=40)
+max_tokens = st.sidebar.slider('Enter max token output',min_value=1,max_value=8192,step=100,value=1024)
+temperature = st.sidebar.slider('Enter temperature',min_value=0.0,max_value=1.0,step=0.1,value=0.1)
+top_p = st.sidebar.slider('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
+top_k = st.sidebar.slider('Enter top_k',min_value=1,max_value=40,step=1,value=40)
 
+if not ('32k' in model_name) and max_tokens>1024:
+  st.error(f'{max_tokens} output tokens is not a valid value for model {model_name}')
 
 # Initialize tracing variables
 tracing = st.sidebar.toggle('Enable Langsmith Tracing')
@@ -163,7 +165,8 @@ with tab3:
     
     if st.button('Execute Prompt'):
         if prompt:
-            execution_result = promptExecutor(prompt)
+            with st.spinner('Running prompt...'):
+                execution_result = promptExecutor(prompt)
             display_result(execution_result)
         else:
             st.warning('Please enter a prompt before executing.')
@@ -226,7 +229,8 @@ with tab5:
     if st.button('Generate Terraform Files',disabled=not (project_id)):
 
         if description:
-            terraform_files = terraformGenerator(description)
+            with st.spinner('Generating Terraform...'):
+                terraform_files = terraformGenerator(description)
             display_terraform_files(terraform_files)
         else:
             st.markdown("No description provided. Please enter a valid description.")
