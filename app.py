@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from langchain import LLMChain
+from langchain.chains import LLMChain
 from langchain.prompts.chat import (ChatPromptTemplate,
                                     HumanMessagePromptTemplate,
                                     SystemMessagePromptTemplate)
