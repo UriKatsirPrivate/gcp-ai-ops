@@ -6,6 +6,7 @@ from langchain.prompts.chat import (ChatPromptTemplate,
                                     SystemMessagePromptTemplate)
 from initialization import initialize_llm, initialize_tracing
 from prompts import PROMPT_IMPROVER_PROMPT
+from placeholders import *
 
 # https://docs.streamlit.io/library/api-reference/utilities/st.set_page_config
 st.set_page_config(
@@ -73,7 +74,7 @@ llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,t
 
 
 with tab1:
-    initial_prompt = st.text_area("Enter your prompt:", height=200,max_chars=None, key=1)
+    initial_prompt = st.text_area("Enter your prompt:", height=200, placeholder=IMPROVE_PROMPT_PLACEHOLDER)
     
     # Initialize LLMChain
     prompt_improver_chain = LLMChain(llm=llm, prompt=PROMPT_IMPROVER_PROMPT)
@@ -126,7 +127,7 @@ with tab2:
         else:
             st.markdown("No modifications needed.")
                     
-    prompt=st.text_area("Enter your prompt:",height=200, max_chars=None, key=None)
+    prompt=st.text_area("Enter your prompt:",height=200, placeholder=INSPECT_PROMPT_PLACEHOLDER)
     if st.button('Inspect and Modify Prompt',disabled=not (project_id)):
         if prompt:
             with st.spinner('Inspecting prompt...'):
@@ -163,7 +164,7 @@ with tab3:
             st.warning('No result to display.')
 
     #Get the prompt from the user
-    prompt = st.text_area('Enter your prompt:',height=200, max_chars=None, key=3)
+    prompt = st.text_area('Enter your prompt:',height=200, key=3,placeholder=RUN_PROMPT_PLACEHOLDER)
     
     if st.button('Execute Prompt'):
         if prompt:
@@ -196,7 +197,7 @@ with tab4:
         else:
             st.markdown("No command generated. Please enter a valid GCP operation.")
 
-    user_input = st.text_area("Enter the desired GCP operation:",height=200, max_chars=None, key=None)
+    user_input = st.text_area("Enter the desired GCP operation:",height=200, placeholder=GCLOUD_PLACEHOLDER)
 
     if st.button('Generate GCP CLI Command',disabled=not (project_id)):
         if user_input:
@@ -227,7 +228,7 @@ with tab5:
         else:
             st.markdown("No Terraform files generated. Please provide a valid description.")        
 
-    description = st.text_area("Enter the description of the desired architecture on GCP:",height=200, max_chars=None, key=None)
+    description = st.text_area("Enter the description of the desired architecture on GCP:",height=200, placeholder=GENERATE_TF_PLACEHOLDER)
     if st.button('Generate Terraform Files',disabled=not (project_id)):
 
         if description:
@@ -260,7 +261,7 @@ with tab6:
         else:
             st.markdown("No vulnerabilities found.")   
     
-    description = st.text_area("Enter Terraform:",height=200, max_chars=None, key=None)
+    description = st.text_area("Enter Terraform:",height=200, placeholder=INSPECT_IAC_PLACEHOLDER)
     if st.button('Scan',disabled=not (project_id)):
         if description:
             with st.spinner('Scanning for vulnerabilities...'):
@@ -288,7 +289,7 @@ with tab7:
         else:
             st.markdown("Not found.")   
     
-    description = st.text_area("Enter AWS Terraform:",height=200, max_chars=None, key=None)
+    description = st.text_area("Enter AWS Terraform:",height=200,placeholder=TF_CONVERTER_PLACEHOLDER)
     if st.button('Convert to GCP',disabled=not (project_id)):
         if description:
             with st.spinner('Converting...'):
