@@ -7,6 +7,7 @@ from langchain.prompts.chat import (ChatPromptTemplate,
 from initialization import initialize_llm, initialize_tracing
 from prompts import PROMPT_IMPROVER_PROMPT
 
+# https://docs.streamlit.io/library/api-reference/utilities/st.set_page_config
 st.set_page_config(
     page_title="GCP AI Ops",
     page_icon="icons/vertexai.png",
@@ -60,12 +61,13 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4, tab5, tab6= st.tabs(["Improve Prompt / "
-                                             , "Inspect My Prompt / "
-                                             ,"Run My Prompt / "
+tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(["Improve Prompt / "
+                                             , "Inspect Prompt / "
+                                             ,"Run Prompt / "
                                              , "Generate gCloud Commands / "
                                              ,"Generate Terraform /"
-                                             ,"Secure Commands"])
+                                             ,"Inspect IaC /"
+                                             ,"TF Converter"])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
@@ -266,3 +268,31 @@ with tab6:
             display_vulnerabilities(gcp_command)
         else:
             st.markdown("No command generated. Please enter a valid GCP operation.")
+with tab7:
+    def terraformConverter(module_string):
+        
+        system_template = """You are a devops expert, specializing in infrastructure ad code and terraform"""
+        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
+        human_template = """Convert the following AWS Terraform to equivalent GCP Terraform: '{module_string}'."""
+        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
+        )
+
+        chain = LLMChain(llm=llm, prompt=chat_prompt)
+        result = chain.run(module_string=module_string)
+        return result # returns string
+    def display_tf(converted):
+        if converted:
+             st.code(converted)
+        else:
+            st.markdown("Not found.")   
+    
+    description = st.text_area("Enter AWS Terraform:",height=200, max_chars=None, key=None)
+    if st.button('Convert to GCP',disabled=not (project_id)):
+        if description:
+            with st.spinner('Converting...'):
+                gcp_tf = terraformConverter(description)
+            display_tf(gcp_tf)
+        else:
+            st.markdown("No terraform generated. Please enter a valid AWS terraform.")            
