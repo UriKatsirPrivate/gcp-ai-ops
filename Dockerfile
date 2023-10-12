@@ -10,7 +10,8 @@ WORKDIR $APP_HOME
 COPY . ./
 
 # Optional: Upgrade pip version
-# RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade pip
+
 ENV SYSTEM_VERSION_COMPAT=1
 
 # Install required libraries
