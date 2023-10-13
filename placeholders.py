@@ -35,3 +35,4 @@ INSPECT_PROMPT_PLACEHOLDER="### Expert in SecOps best practices, what are some b
 RUN_PROMPT_PLACEHOLDER="### Expert in SecOps best practices, what are some best practices?"
 GCLOUD_PLACEHOLDER="### Expert in GCP, create gcs bucket"
 GENERATE_TF_PLACEHOLDER="### Expert in GCP, create gcs bucket"
+GENERATE_IMAGES="A photo of a chocolate bar on a kitchen counter"
