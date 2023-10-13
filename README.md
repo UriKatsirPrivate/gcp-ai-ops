@@ -1,6 +1,6 @@
 # GCP AI OPS
 
-## Variety of GCP related OPS services powered by VertexAI
+## A variety of GCP related OPS services powered by VertexAI
 
 ### See it in action [here](https://gcpaiops.xyz/)
 
@@ -10,6 +10,8 @@
 * Run the prompt.
 * Create a gCloud CLI command.
 * Create a terraform template.
+* Inspect existing IaC code for security issues.
+* Convert AWS TF to GCP equivalent.
 
 ### How to use
 * Modify app.py:
