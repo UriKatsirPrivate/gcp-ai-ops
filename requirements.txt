@@ -4,3 +4,4 @@ streamlit==1.27.2
 langchain==0.0.312
 google-cloud-aiplatform[preview]
 google-cloud-secret-manager==2.16.4
+vertexai
