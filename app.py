@@ -5,6 +5,8 @@ from langchain.prompts.chat import (ChatPromptTemplate,
                                     HumanMessagePromptTemplate,
                                     SystemMessagePromptTemplate)
 from initialization import initialize_llm, initialize_tracing
+import vertexai
+from vertexai.preview.vision_models import Image, ImageGenerationModel
 from prompts import PROMPT_IMPROVER_PROMPT
 from placeholders import *
 
@@ -62,13 +64,15 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(["Improve Prompt / "
+tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8= st.tabs(["Improve Prompt / "
                                              , "Inspect Prompt / "
                                              ,"Run Prompt / "
                                              , "Generate gCloud Commands / "
                                              ,"Generate Terraform /"
                                              ,"Inspect IaC /"
-                                             ,"TF Converter"])
+                                             ,"TF Converter /"
+                                             ,"Images"
+                                             ])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
@@ -296,4 +300,34 @@ with tab7:
                 gcp_tf = terraformConverter(description)
             display_tf(gcp_tf)
         else:
-            st.markdown("No terraform generated. Please enter a valid AWS terraform.")            
+            st.markdown("No terraform generated. Please enter a valid AWS terraform.")
+with tab8:
+    def GenerateImage(description,num_of_images):
+        
+        vertexai.init(project=project_id, location=region)
+
+        # model = ImageGenerationModel.from_pretrained(model_name)
+        model = ImageGenerationModel.from_pretrained("imagegeneration@002")
+        images = model.generate_images(
+        prompt=description,
+        # Optional:
+        number_of_images=num_of_images,
+        # seed=1,
+        )
+        return images
+    def display_images(images):
+        for image in images:
+            image.save(location="./gen-img1.png", include_generation_parameters=True)
+            st.image("./gen-img1.png",use_column_width="auto")
+   
+    link="https://cloud.google.com/vertex-ai/docs/generative-ai/image/img-gen-prompt-guide"
+    desc="Write your prompt below, See help icon for a prompt guide: (Images will be generated using the imagegeneration@002 model)"
+    description = st.text_area(desc,height=200,key=55,placeholder=GENERATE_IMAGES,help=link)
+    num_of_images=st.number_input("How many images to generate",min_value=1,max_value=8,value=4)
+    if st.button('Generate Image',disabled=not (project_id)):
+        if description:
+            with st.spinner('Generating Images...'):
+                images = GenerateImage(description,num_of_images)
+            display_images(images)
+        else:
+            st.markdown("No image generated. Please enter a valid prompt.")                     

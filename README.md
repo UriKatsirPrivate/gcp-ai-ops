@@ -12,6 +12,7 @@
 * Create a terraform template.
 * Inspect existing IaC code for security issues.
 * Convert AWS TF to GCP equivalent.
+* Image Generation.
 
 ### How to use
 * Modify app.py:
