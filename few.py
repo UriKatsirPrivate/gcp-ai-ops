@@ -1,8 +1,8 @@
 import os
 import streamlit as st
-import tempfile
+# import tempfile
 from langchain.chains import LLMChain
-from langchain.chat_models import ChatOpenAI
+# from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import (
     ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate)
 from initialization import initialize_llm
@@ -12,7 +12,7 @@ st.title('Prompt Magic')
 PROJECT_ID="landing-zone-demo-341118"
 LANGSMITH_KEY_NAME="langchain-api-key"
 REGIONS=["us-central1"]
-MODEL_NAMES=['text-bison','text-bison-32k','chat-bison','code-bison','code-bison-32k']
+MODEL_NAMES=['text-bison','text-bison-32k','code-bison','code-bison-32k']
 
 st.sidebar.write("Project ID: ",f"{PROJECT_ID}") 
 project_id=PROJECT_ID
@@ -25,27 +25,14 @@ top_k = st.sidebar.slider('Enter top_k',min_value=1,max_value=40,step=1,value=40
 
 llm=initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
-# Get openai_api_key
-# openai_api_key = st.sidebar.text_input(
-#     "OpenAI API Key",
-#     placeholder="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",
-#     value="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",
-#     type="password",
-# )
 
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # Function to convert zero-shot prompt into a few-shot prompt
-
-
 def fewShotPromptConverter(zero_shot_prompt):
-#     chat = ChatOpenAI(
-#         model="gpt-3.5-turbo-16k",
-#         openai_api_key=openai_api_key,
-#         temperature=0
-#     )
+
     chat = llm
     system_template = """You are an assistant designed to convert a zero-shot prompt into a few-shot prompt."""
     system_message_prompt = SystemMessagePromptTemplate.from_template(
@@ -69,11 +56,9 @@ with st.form(key='prompt_magic'):
     submit_button = st.form_submit_button(label='Submit Prompt')
     # If form is submitted by st.form_submit_button run the logic
     if submit_button:
-        # if not openai_api_key.startswith('sk-'):
-        #     st.warning('Please enter your OpenAI API key!', icon='⚠')
-        #     few_shot_prompt = ""
+
         if zero_shot_prompt:
-            with st.spinner('DemoGPT is working on it. It takes less than 10 seconds...'):
+            with st.spinner('Working on it...'):
                 few_shot_prompt = fewShotPromptConverter(zero_shot_prompt)
         else:
             few_shot_prompt = ""
