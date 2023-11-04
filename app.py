@@ -352,7 +352,8 @@ with tab9:
 
     with st.form(key='prompt_magic'):
         # Under the form, take all the user inputs
-        zero_shot_prompt = st.text_area("Enter zero-shot prompt",height=200,)
+        desc="Enter zero-shot prompt. For better results use text-bison-32k model with a high temperature."
+        zero_shot_prompt = st.text_area(desc,height=200,)
         submit_button = st.form_submit_button(label='Submit Prompt')
         # If form is submitted by st.form_submit_button run the logic
         if submit_button:
