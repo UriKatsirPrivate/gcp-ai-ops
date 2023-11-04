@@ -27,8 +27,8 @@ llm=initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top
 
 
 # Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# if "messages" not in st.session_state:
+#     st.session_state.messages = []
 
 # Function to convert zero-shot prompt into a few-shot prompt
 def fewShotPromptConverter(zero_shot_prompt):

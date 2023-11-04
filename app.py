@@ -25,7 +25,7 @@ st.set_page_config(
 
 PROJECT_ID="landing-zone-demo-341118"
 LANGSMITH_KEY_NAME="langchain-api-key"
-REGIONS=["us-central1"]
+REGIONS=["us-central1","us-west4","us-west1","us-east4","northamerica-northeast1","europe-west1","europe-west2","europe-west3","europe-west4","europe-west9"]
 MODEL_NAMES=['text-bison','text-bison-32k','code-bison','code-bison-32k']
 
 st.sidebar.write("Project ID: ",f"{PROJECT_ID}") 
@@ -64,14 +64,15 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8= st.tabs(["Improve Prompt / "
+tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9= st.tabs(["Improve Prompt / "
                                              , "Inspect Prompt / "
                                              ,"Run Prompt / "
                                              , "Generate gCloud Commands / "
                                              ,"Generate Terraform /"
                                              ,"Inspect IaC /"
                                              ,"TF Converter /"
-                                             ,"Images"
+                                             ,"Images /",
+                                             "Zero to Few"
                                              ])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
@@ -331,3 +332,37 @@ with tab8:
             display_images(images)
         else:
             st.markdown("No image generated. Please enter a valid prompt.")                     
+with tab9:
+    def fewShotPromptConverter(zero_shot_prompt):
+
+        chat = llm
+        system_template = """You are an assistant designed to convert a zero-shot prompt into a few-shot prompt."""
+        system_message_prompt = SystemMessagePromptTemplate.from_template(
+            system_template)
+        human_template = """The zero-shot prompt is: '{zero_shot_prompt}'. Please convert it into a few-shot prompt."""
+        human_message_prompt = HumanMessagePromptTemplate.from_template(
+            human_template)
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
+        )
+
+        chain = LLMChain(llm=chat, prompt=chat_prompt)
+        result = chain.run(zero_shot_prompt=zero_shot_prompt)
+        return result  # returns string
+
+    with st.form(key='prompt_magic'):
+        # Under the form, take all the user inputs
+        zero_shot_prompt = st.text_area("Enter zero-shot prompt",height=200,)
+        submit_button = st.form_submit_button(label='Submit Prompt')
+        # If form is submitted by st.form_submit_button run the logic
+        if submit_button:
+            if zero_shot_prompt:
+                with st.spinner('Working on it...'):
+                    few_shot_prompt = fewShotPromptConverter(zero_shot_prompt)
+            else:
+                few_shot_prompt = ""
+            # Display the few-shot prompt to the user
+            if few_shot_prompt is not None and len(str(few_shot_prompt)) > 0:
+                st.text(few_shot_prompt)
+            else:
+                st.text("Please enter a zero-shot prompt")
