@@ -7,7 +7,7 @@ from langchain.prompts.chat import (ChatPromptTemplate,
 from initialization import initialize_llm, initialize_tracing
 import vertexai
 from vertexai.preview.vision_models import Image, ImageGenerationModel
-from prompts import PROMPT_IMPROVER_PROMPT
+# from prompts import PROMPT_IMPROVER_PROMPT
 from placeholders import *
 
 # https://docs.streamlit.io/library/api-reference/utilities/st.set_page_config
@@ -25,7 +25,7 @@ st.set_page_config(
 
 PROJECT_ID="landing-zone-demo-341118"
 LANGSMITH_KEY_NAME="langchain-api-key"
-REGIONS=["us-central1","us-west4","us-west1","us-east4","northamerica-northeast1","europe-west1","europe-west2","europe-west3","europe-west4","europe-west9"]
+REGIONS=["europe-west4","us-central1","us-west4","us-west1","us-east4","northamerica-northeast1","europe-west1","europe-west2","europe-west3","europe-west9"]
 MODEL_NAMES=['text-bison','text-bison-32k','code-bison','code-bison-32k']
 
 st.sidebar.write("Project ID: ",f"{PROJECT_ID}") 
@@ -64,89 +64,17 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9= st.tabs(["Improve Prompt / "
-                                             , "Inspect Prompt / "
-                                             ,"Run Prompt / "
+tab1, tab2, tab3, tab4, tab5, tab6= st.tabs(["Run Prompt / "
                                              , "Generate gCloud Commands / "
                                              ,"Generate Terraform /"
                                              ,"Inspect IaC /"
                                              ,"TF Converter /"
-                                             ,"Images /",
-                                             "Zero to Few"
+                                             ,"Images"
                                              ])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
 
-
 with tab1:
-    initial_prompt = st.text_area("Enter your prompt:", height=200, placeholder=IMPROVE_PROMPT_PLACEHOLDER)
-    
-    # Initialize LLMChain
-    prompt_improver_chain = LLMChain(llm=llm, prompt=PROMPT_IMPROVER_PROMPT)
-
-    # Run LLMChain
-    # if st.button('Generate Improved Prompt',disabled=not (project_id) or not (initial_prompt)):
-    if st.button('Generate Improved Prompt',disabled=not (project_id)):
-        if initial_prompt:
-            with st.spinner("Generating Improved Prompt..."):
-                improved_prompt = prompt_improver_chain.run(initial_prompt)
-                st.markdown("""
-                                ### Improved Prompt:
-                                """)
-                st.code(improved_prompt)
-        else:
-            st.error(f"Please provide a prompt")
-with tab2:
-    def securityInspector(prompt):
-    
-        llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
-
-        system_template = """You are a security analyst. Your task is to inspect the given prompt for any potential security issues."""
-        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """Please inspect the following prompt for security issues: '{prompt}'."""
-        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_message_prompt, human_message_prompt]
-        )
-
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(prompt=prompt)
-        return result # returns string
-    
-    def safePromptSuggester(inspection_result):
-
-        system_template = """You are an AI assistant designed to suggest a modified, safe prompt if security issues are found in the original prompt."""
-        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """Based on the inspection result: '{inspection_result}', please suggest a modified, safe prompt."""
-        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_message_prompt, human_message_prompt]
-        )
-
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(inspection_result=inspection_result)
-        return result # returns string
-    def displaySafePrompt(safe_prompt):
-        if safe_prompt:
-            st.markdown(f"**Modified, Safe Prompt:** {safe_prompt}")
-        else:
-            st.markdown("No modifications needed.")
-                    
-    prompt=st.text_area("Enter your prompt:",height=200, placeholder=INSPECT_PROMPT_PLACEHOLDER)
-    if st.button('Inspect and Modify Prompt',disabled=not (project_id)):
-        if prompt:
-            with st.spinner('Inspecting prompt...'):
-                inspection_result = securityInspector(prompt)
-            st.text_area('Inspection Result', inspection_result, height=200, max_chars=None, key=None)
-            # print(inspection_result)
-            # if (inspection_result != "System: The prompt you provided does not contain any security issues."):
-            if ("does not contain any security issues" not in inspection_result):
-                with st.spinner('Creating Safe Prompt...'):
-                    safe_prompt = safePromptSuggester(inspection_result)
-                displaySafePrompt(safe_prompt)
-        else:
-            st.markdown("Please enter a prompt.")
-with tab3:
     def promptExecutor(prompt):
     
         system_template = """You are an AI assistant designed to execute the given prompt: '{prompt}'."""
@@ -178,7 +106,7 @@ with tab3:
             display_result(execution_result)
         else:
             st.warning('Please enter a prompt before executing.')
-with tab4:
+with tab2:
     def gcpCliCommandGenerator(user_input):
     
         system_template = """You are a virtual assistant capable of generating the corresponding Google Cloud Platform (GCP) command-line interface (CLI) command based on the user's input."""
@@ -211,7 +139,7 @@ with tab4:
             display_gcp_command(gcp_command)
         else:
             st.markdown("No command generated. Please enter a valid GCP operation.")
-with tab5:
+with tab3:
     def terraformGenerator(description):
     
         system_template = """You are a terraform expert capable of generating Terraform files based on the user's description."""
@@ -245,7 +173,7 @@ with tab5:
     else:
         terraform_files = ""
         # display_terraform_files(terraform_files)
-with tab6:
+with tab4:
     def terraformScanner(module_string):
         
         system_template = """You are a security assistant designed to scan for vulnerabilities in the provided terraform module or gcloud commands string content."""
@@ -274,7 +202,7 @@ with tab6:
             display_vulnerabilities(gcp_command)
         else:
             st.markdown("No command generated. Please enter a valid GCP operation.")
-with tab7:
+with tab5:
     def terraformConverter(module_string):
         
         system_template = """You are a devops expert, specializing in infrastructure ad code and terraform"""
@@ -302,7 +230,7 @@ with tab7:
             display_tf(gcp_tf)
         else:
             st.markdown("No terraform generated. Please enter a valid AWS terraform.")
-with tab8:
+with tab6:
     def GenerateImage(description,num_of_images):
         
         vertexai.init(project=project_id, location=region)
@@ -332,38 +260,3 @@ with tab8:
             display_images(images)
         else:
             st.markdown("No image generated. Please enter a valid prompt.")                     
-with tab9:
-    def fewShotPromptConverter(zero_shot_prompt):
-
-        chat = llm
-        system_template = """You are an assistant designed to convert a zero-shot prompt into a few-shot prompt."""
-        system_message_prompt = SystemMessagePromptTemplate.from_template(
-            system_template)
-        human_template = """The zero-shot prompt is: '{zero_shot_prompt}'. Please convert it into a few-shot prompt."""
-        human_message_prompt = HumanMessagePromptTemplate.from_template(
-            human_template)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_message_prompt, human_message_prompt]
-        )
-
-        chain = LLMChain(llm=chat, prompt=chat_prompt)
-        result = chain.run(zero_shot_prompt=zero_shot_prompt)
-        return result  # returns string
-
-    with st.form(key='prompt_magic'):
-        # Under the form, take all the user inputs
-        desc="Enter zero-shot prompt. For better results use text-bison-32k model with a high temperature."
-        zero_shot_prompt = st.text_area(desc,height=200,)
-        submit_button = st.form_submit_button(label='Submit Prompt')
-        # If form is submitted by st.form_submit_button run the logic
-        if submit_button:
-            if zero_shot_prompt:
-                with st.spinner('Working on it...'):
-                    few_shot_prompt = fewShotPromptConverter(zero_shot_prompt)
-            else:
-                few_shot_prompt = ""
-            # Display the few-shot prompt to the user
-            if few_shot_prompt is not None and len(str(few_shot_prompt)) > 0:
-                st.text(few_shot_prompt)
-            else:
-                st.text("Please enter a zero-shot prompt")
