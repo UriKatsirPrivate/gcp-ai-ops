@@ -9,6 +9,7 @@ import vertexai
 from vertexai.preview.vision_models import Image, ImageGenerationModel
 # from prompts import PROMPT_IMPROVER_PROMPT
 from placeholders import *
+from system_prompts import *
 
 # https://docs.streamlit.io/library/api-reference/utilities/st.set_page_config
 st.set_page_config(
@@ -231,19 +232,36 @@ with tab5:
         else:
             st.markdown("No terraform generated. Please enter a valid AWS terraform.")
 with tab6:
-    def GenerateImage(description,num_of_images):
+    def GenerateImagePrompt(description,number):
         
-        vertexai.init(project=project_id, location=region)
-
-        # model = ImageGenerationModel.from_pretrained(model_name)
-        model = ImageGenerationModel.from_pretrained("imagegeneration@002")
-        images = model.generate_images(
-        prompt=description,
-        # Optional:
-        number_of_images=num_of_images,
-        # seed=1,
+        system_template = GenerateImageSystemPrompt
+        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
+        human_template = f"""Please generate {number} prompts about: {description} ."""
+        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
         )
-        return images
+
+        chain = LLMChain(llm=llm, prompt=chat_prompt)
+        result = chain.run(module_string=description)
+        # print (f" result is: {result}")
+        return result # returns string
+    
+    def GenerateImage(description,num_of_images):
+        try:
+            vertexai.init(project=project_id, location=region)
+
+            # model = ImageGenerationModel.from_pretrained(model_name)
+            model = ImageGenerationModel.from_pretrained("imagegeneration@002")
+            images = model.generate_images(
+            prompt=description,
+            # Optional:
+            number_of_images=num_of_images,
+            # seed=1,
+            )
+            return images
+        except:
+            ""
     def display_images(images):
         for image in images:
             image.save(location="./gen-img1.png", include_generation_parameters=True)
@@ -252,11 +270,30 @@ with tab6:
     link="https://cloud.google.com/vertex-ai/docs/generative-ai/image/img-gen-prompt-guide"
     desc="Write your prompt below, See help icon for a prompt guide: (Images will be generated using the imagegeneration@002 model)"
     description = st.text_area(desc,height=200,key=55,placeholder=GENERATE_IMAGES,help=link)
-    num_of_images=st.number_input("How many images to generate",min_value=1,max_value=8,value=4)
-    if st.button('Generate Image',disabled=not (project_id)):
-        if description:
-            with st.spinner('Generating Images...'):
-                images = GenerateImage(description,num_of_images)
-            display_images(images)
-        else:
-            st.markdown("No image generated. Please enter a valid prompt.")                     
+    # num_of_images=st.number_input("How many images to generate",min_value=1,max_value=8,value=4)
+    
+    col1, col2 = st.columns(2,gap="large")
+    with col1:
+        with st.form(key='prompt_magic',clear_on_submit=False):
+            num_of_prompts=st.number_input("How many prompts to generate",min_value=1,max_value=3,value=2)
+            if st.form_submit_button('Generate Prompt(s)',disabled=not (project_id)):
+                if description:
+                    with st.spinner('Generating Prompt(s)...'):
+                        improved_prompt = GenerateImagePrompt(description,num_of_prompts)
+                    st.markdown(improved_prompt)
+                else:
+                    st.markdown("No prompts generated. Please enter a valid prompt.")        
+    with col2:
+        with st.form(key='prompt_magic1',clear_on_submit=False):                
+        
+            num_of_images=st.number_input("How many images to generate",min_value=1,max_value=8,value=4)
+            if st.form_submit_button('Generate Image(s)',disabled=not (project_id)):
+                if description:
+                    with st.spinner('Generating Image(s)...'):
+                        images = GenerateImage(description,num_of_images)
+                        if images:
+                            display_images(images)
+                        else:
+                           st.markdown("No images generated. Prompt was blocked.")     
+                else:
+                    st.markdown("No images generated. Please enter a valid prompt.")
