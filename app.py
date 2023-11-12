@@ -5,9 +5,6 @@ from langchain.prompts.chat import (ChatPromptTemplate,
                                     HumanMessagePromptTemplate,
                                     SystemMessagePromptTemplate)
 from initialization import initialize_llm, initialize_tracing
-import vertexai
-from vertexai.preview.vision_models import Image, ImageGenerationModel
-# from prompts import PROMPT_IMPROVER_PROMPT
 from placeholders import *
 from system_prompts import *
 
@@ -27,13 +24,13 @@ st.set_page_config(
 PROJECT_ID="landing-zone-demo-341118"
 LANGSMITH_KEY_NAME="langchain-api-key"
 REGIONS=["europe-west4","us-central1","us-west4","us-west1","us-east4","northamerica-northeast1","europe-west1","europe-west2","europe-west3","europe-west9"]
-MODEL_NAMES=['text-bison','text-bison-32k','code-bison','code-bison-32k']
+MODEL_NAMES=['text-bison-32k','text-bison','code-bison','code-bison-32k']
 
 st.sidebar.write("Project ID: ",f"{PROJECT_ID}") 
 project_id=PROJECT_ID
 region=st.sidebar.selectbox("Please enter the region",REGIONS)
 model_name = st.sidebar.selectbox('Enter model name',MODEL_NAMES)
-max_tokens = st.sidebar.slider('Enter max token output',min_value=1,max_value=8192,step=100,value=1024)
+max_tokens = st.sidebar.slider('Enter max token output',min_value=1,max_value=8192,step=100,value=8192)
 temperature = st.sidebar.slider('Enter temperature',min_value=0.0,max_value=1.0,step=0.1,value=0.1)
 top_p = st.sidebar.slider('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
 top_k = st.sidebar.slider('Enter top_k',min_value=1,max_value=40,step=1,value=40)
@@ -42,7 +39,7 @@ if not ('32k' in model_name) and max_tokens>1024:
   st.error(f'{max_tokens} output tokens is not a valid value for model {model_name}')
 
 # Initialize tracing variables
-tracing = st.sidebar.toggle('Enable Langsmith Tracing')
+tracing = st.sidebar.toggle('Enable Langsmith Tracing',disabled=True)
 langsmith_endpoint = st.sidebar.text_input(label="Langsmith Endpoint", value="https://api.smith.langchain.com", disabled=not tracing)
 langsmith_project = st.sidebar.text_input(label="Langsmith Project", value="GCP AI OPS", disabled=not tracing)
 
@@ -65,12 +62,12 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-tab1, tab2, tab3, tab4, tab5, tab6= st.tabs(["Run Prompt / "
+tab1, tab2, tab3, tab4, tab5= st.tabs(["Run Prompt / "
                                              , "Generate gCloud Commands / "
                                              ,"Generate Terraform /"
                                              ,"Inspect IaC /"
                                              ,"TF Converter /"
-                                             ,"Images"
+                                             
                                              ])
 
 llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
@@ -231,69 +228,3 @@ with tab5:
             display_tf(gcp_tf)
         else:
             st.markdown("No terraform generated. Please enter a valid AWS terraform.")
-with tab6:
-    def GenerateImagePrompt(description,number):
-        
-        system_template = GenerateImageSystemPrompt
-        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = f"""Please generate {number} prompts about: {description} ."""
-        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_message_prompt, human_message_prompt]
-        )
-
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(module_string=description)
-        # print (f" result is: {result}")
-        return result # returns string
-    
-    def GenerateImage(description,num_of_images):
-        try:
-            vertexai.init(project=project_id, location=region)
-
-            # model = ImageGenerationModel.from_pretrained(model_name)
-            model = ImageGenerationModel.from_pretrained("imagegeneration@002")
-            images = model.generate_images(
-            prompt=description,
-            # Optional:
-            number_of_images=num_of_images,
-            # seed=1,
-            )
-            return images
-        except:
-            ""
-    def display_images(images):
-        for image in images:
-            image.save(location="./gen-img1.png", include_generation_parameters=True)
-            st.image("./gen-img1.png",use_column_width="auto")
-   
-    link="https://cloud.google.com/vertex-ai/docs/generative-ai/image/img-gen-prompt-guide"
-    desc="Write your prompt below, See help icon for a prompt guide: (Images will be generated using the imagegeneration@002 model)"
-    description = st.text_area(desc,height=200,key=55,placeholder=GENERATE_IMAGES,help=link)
-    # num_of_images=st.number_input("How many images to generate",min_value=1,max_value=8,value=4)
-    
-    col1, col2 = st.columns(2,gap="large")
-    with col1:
-        with st.form(key='prompt_magic',clear_on_submit=False):
-            num_of_prompts=st.number_input("How many prompts to generate",min_value=1,max_value=3,value=2)
-            if st.form_submit_button('Generate Prompt(s)',disabled=not (project_id)):
-                if description:
-                    with st.spinner('Generating Prompt(s)...'):
-                        improved_prompt = GenerateImagePrompt(description,num_of_prompts)
-                    st.markdown(improved_prompt)
-                else:
-                    st.markdown("No prompts generated. Please enter a valid prompt.")        
-    with col2:
-        with st.form(key='prompt_magic1',clear_on_submit=False):                
-        
-            num_of_images=st.number_input("How many images to generate",min_value=1,max_value=8,value=4)
-            if st.form_submit_button('Generate Image(s)',disabled=not (project_id)):
-                if description:
-                    with st.spinner('Generating Image(s)...'):
-                        images = GenerateImage(description,num_of_images)
-                        if images:
-                            display_images(images)
-                        else:
-                           st.markdown("No images generated. Prompt was blocked.")     
-                else:
-                    st.markdown("No images generated. Please enter a valid prompt.")
