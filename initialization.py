@@ -25,7 +25,7 @@ def initialize_tracing(tracing,endpoint,langsmith_project,gcp_project,langsmith_
     # os.environ["LANGCHAIN_API_KEY"] = get_from_secrets_manager("langchain-api-key",gcp_project)
     os.environ["LANGCHAIN_PROJECT"] = langsmith_project
 
-def get_from_secrets_manager(secret_name,gcp_project):
+def get_from_secrets_manager(secret_name,gcp_project='landing-zone-demo-341118'):
     # if langsmith_key:
     #     return langsmith_key
 

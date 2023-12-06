@@ -7,6 +7,7 @@ from langchain.prompts.chat import (ChatPromptTemplate,
 from initialization import initialize_llm, initialize_tracing
 from placeholders import *
 from system_prompts import *
+import requests
 
 # https://docs.streamlit.io/library/api-reference/utilities/st.set_page_config
 st.set_page_config(
@@ -21,10 +22,29 @@ st.set_page_config(
     }
 )
 
-PROJECT_ID="landing-zone-demo-341118"
 LANGSMITH_KEY_NAME="langchain-api-key"
 REGIONS=["europe-west4","us-central1","us-west4","us-west1","us-east4","northamerica-northeast1","europe-west1","europe-west2","europe-west3","europe-west9"]
 MODEL_NAMES=['text-bison-32k','text-bison','code-bison','code-bison-32k']
+
+def get_project_id():
+    metadata_server_url = "http://metadata.google.internal/computeMetadata/v1/"
+    metadata_flavor = {'Metadata-Flavor': 'Google'}
+    try:
+        response = requests.get(metadata_server_url + "project/project-id", headers=metadata_flavor)
+        if response.status_code == 200:
+            project_id = response.text
+            return project_id
+        else:
+            print(f"Failed to retrieve project ID. Status code: {response.status_code}")
+            return None
+    except requests.RequestException as e:
+        print(f"Error: {e}")
+        return None
+
+PROJECT_ID=st.sidebar.text_input(label="Project ID",value="Your Project ID")
+if PROJECT_ID=="" or PROJECT_ID=="Your Project ID":
+    # print("getting project id")
+    PROJECT_ID=get_project_id()
 
 st.sidebar.write("Project ID: ",f"{PROJECT_ID}") 
 project_id=PROJECT_ID
@@ -41,18 +61,18 @@ if not ('32k' in model_name) and max_tokens>1024:
 # Initialize tracing variables
 tracing = st.sidebar.toggle('Enable Langsmith Tracing',disabled=True)
 langsmith_endpoint = st.sidebar.text_input(label="Langsmith Endpoint", value="https://api.smith.langchain.com", disabled=not tracing)
-langsmith_project = st.sidebar.text_input(label="Langsmith Project", value="GCP AI OPS", disabled=not tracing)
+langsmith_project = st.sidebar.text_input(label="Langsmith Project", value="gcp-ai-ops", disabled=not tracing)
 
 # Check if initialize_tracing() has already been called
-if 'tracing_initialized' not in st.session_state:
-    initialize_tracing(tracing,langsmith_endpoint,langsmith_project,PROJECT_ID,LANGSMITH_KEY_NAME)
-    # Set the flag to indicate that initialize_tracing() has been called
-    st.session_state.tracing_initialized = True
+# if 'tracing_initialized' not in st.session_state:
+#     initialize_tracing(tracing,langsmith_endpoint,langsmith_project,PROJECT_ID,LANGSMITH_KEY_NAME)
+#     # Set the flag to indicate that initialize_tracing() has been called
+#     st.session_state.tracing_initialized = True
 
-if tracing:
-    os.environ["LANGCHAIN_TRACING_V2"]="True"
-else:
-    os.environ["LANGCHAIN_TRACING_V2"]="False"
+# if tracing:
+#     os.environ["LANGCHAIN_TRACING_V2"]="True"
+# else:
+#     os.environ["LANGCHAIN_TRACING_V2"]="False"
 
 css = '''
 <style>
@@ -63,7 +83,7 @@ css = '''
 '''
 st.markdown(css, unsafe_allow_html=True)
 tab1, tab2, tab3, tab4, tab5= st.tabs(["Run Prompt / "
-                                             , "Generate gCloud Commands / "
+                                             , "Generate gCloud Command / "
                                              ,"Generate Terraform /"
                                              ,"Inspect IaC /"
                                              ,"TF Converter /"
@@ -97,7 +117,7 @@ with tab1:
     #Get the prompt from the user
     prompt = st.text_area('Enter your prompt:',height=200, key=3,placeholder=RUN_PROMPT_PLACEHOLDER)
     
-    if st.button('Execute Prompt'):
+    if st.button('Execute Prompt',disabled=not (project_id)  or project_id=="Your Project ID"):
         if prompt:
             with st.spinner('Running prompt...'):
                 execution_result = promptExecutor(prompt)
@@ -109,7 +129,9 @@ with tab2:
     
         system_template = """You are a virtual assistant capable of generating the corresponding Google Cloud Platform (GCP) command-line interface (CLI) command based on the user's input."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """The user's input is: '{user_input}'. Please generate the corresponding GCP CLI command."""
+        human_template = """The user's input is: '{user_input}'. Please generate the corresponding GCP CLI command. 
+                            Be as elaborate as possible.
+                            For every flag you use, explain its purpose. also, make sure to provide a working sample command. """
         human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_message_prompt, human_message_prompt]
@@ -142,7 +164,10 @@ with tab3:
     
         system_template = """You are a terraform expert capable of generating Terraform files based on the user's description."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """The user's description is: '{description}'. Please generate the appropriate Terraform files based on this description."""
+        human_template = """Please generate the appropriate Terraform files based on this description.
+                            Use input variables as much a possible.
+                            When makes sense,split the result into modules. Also, create the accompanying .tfvars file.
+                            The user's description is: '{description}'"""
         human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_message_prompt, human_message_prompt]
@@ -176,7 +201,9 @@ with tab4:
         
         system_template = """You are a security assistant designed to scan for vulnerabilities in the provided terraform module or gcloud commands string content."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """Please scan the following terraform module gcloud commands string for any potential vulnerabilities: '{module_string}'."""
+        human_template = """Please scan the following terraform module or gcloud command for any potential vulnerabilities.
+                            For each vulnerability that you find, provide a secure terraform or gCloud alternative.
+                            Here is the module: '{module_string}'."""
         human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_message_prompt, human_message_prompt]
@@ -205,7 +232,9 @@ with tab5:
         
         system_template = """You are a devops expert, specializing in infrastructure ad code and terraform"""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """Convert the following AWS Terraform to equivalent GCP Terraform: '{module_string}'."""
+        human_template = """Convert the following AWS Terraform to equivalent GCP Terraform. Use input variables as much a possible.
+                            When makes sense,split the result into modules. Also, create the accompanying .tfvars file.
+                            Here is the module:'{module_string}'."""
         human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_message_prompt, human_message_prompt]
