@@ -6,6 +6,12 @@ export ARTIFACT_REGISTRY_NAME=cloud-run-source-deploy
 export REGION=europe-west4
 export SERVICE_ACCOUNT_EMAIL=experts-hub-demo@landing-zone-demo-341118.iam.gserviceaccount.com
 
+# Enable APIs
+gcloud services enable cloudbuild.googleapis.com --project $GOOGLE_CLOUD_PROJECT
+gcloud services enable artifactregistry.googleapis.com --project $GOOGLE_CLOUD_PROJECT
+gcloud services enable run.googleapis.com --project $GOOGLE_CLOUD_PROJECT --async
+gcloud services enable aiplatform.googleapis.com --project $GOOGLE_CLOUD_PROJECT --async
+
 # Artifact Registry
 gcloud builds submit --tag $REGION-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/$ARTIFACT_REGISTRY_NAME/$SERVICE_NAME:latest
 
