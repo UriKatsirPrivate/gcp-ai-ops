@@ -8,6 +8,7 @@ from initialization import initialize_llm, initialize_tracing
 from placeholders import *
 from system_prompts import *
 import requests
+from langchain import hub
 
 # https://docs.streamlit.io/library/api-reference/utilities/st.set_page_config
 st.set_page_config(
@@ -16,7 +17,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get help': 'https://cloud.google.com/vertex-ai?hl=en',
+        'Get help': 'https://github.com/UriKatsirPrivate/gcp-ai-ops',
         # 'About': "# This is a header. This is an *extremely* cool app!"
         'About': "#### Created by [Uri Katsir](https://www.linkedin.com/in/uri-katsir/)"
     }
@@ -103,8 +104,10 @@ with tab1:
             [system_message_prompt, human_message_prompt]
         )
 
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(prompt=prompt)
+        # chain = LLMChain(llm=llm, prompt=chat_prompt)
+        chain = chat_prompt | llm
+        result = chain.invoke({"prompt":prompt})
+        # result = chain.run(prompt=prompt)
         return result # returns string   
 
     def display_result(execution_result):
@@ -126,21 +129,13 @@ with tab1:
             st.warning('Please enter a prompt before executing.')
 with tab2:
     def gcpCliCommandGenerator(user_input):
-    
-        system_template = """You are a virtual assistant capable of generating the corresponding Google Cloud Platform (GCP) command-line interface (CLI) command based on the user's input."""
-        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-        human_template = """The user's input is: '{user_input}'. Please generate the corresponding GCP CLI command. 
-                            Be as elaborate as possible.
-                            For every flag you use, explain its purpose. also, make sure to provide a working sample command. """
-        human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_message_prompt, human_message_prompt]
-        )
-
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(user_input=user_input)
+            
+        prompt =  hub.pull("uri-katsir/generate-gcp-cli-commands")
+        runnable = prompt | llm
+        result = runnable.invoke({
+                        "user_input": user_input
+                    })
         return result # returns string
-    
     def display_gcp_command(gcp_command):
         if gcp_command != "":
             # st.markdown(f"**Generated GCP CLI Command:** {gcp_command}")
@@ -173,8 +168,10 @@ with tab3:
             [system_message_prompt, human_message_prompt]
         )
 
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(description=description)
+        # chain = LLMChain(llm=llm, prompt=chat_prompt)
+        chain = chat_prompt | llm
+        # result = chain.run(description=description)
+        result = chain.invoke({"description":description})
         return result # returns string
     def display_terraform_files(terraform_files):
         if terraform_files:
@@ -209,8 +206,10 @@ with tab4:
             [system_message_prompt, human_message_prompt]
         )
 
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(module_string=module_string)
+        # chain = LLMChain(llm=llm, prompt=chat_prompt)
+        chain = chat_prompt | llm
+        # result = chain.run(module_string=module_string)
+        result = chain.invoke({"module_string":module_string})
         return result # returns string
     def display_vulnerabilities(vulnerabilities):
         if vulnerabilities:
@@ -240,8 +239,9 @@ with tab5:
             [system_message_prompt, human_message_prompt]
         )
 
-        chain = LLMChain(llm=llm, prompt=chat_prompt)
-        result = chain.run(module_string=module_string)
+        chain = chat_prompt | llm
+        # result = chain.run(module_string=module_string)
+        result = chain.invoke({"module_string":module_string})
         return result # returns string
     def display_tf(converted):
         if converted:

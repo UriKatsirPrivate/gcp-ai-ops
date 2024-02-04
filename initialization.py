@@ -1,5 +1,6 @@
 import os
-from langchain.llms import VertexAI
+# from langchain.llms import VertexAI
+from langchain_google_vertexai import VertexAI
 from google.cloud import secretmanager
 
 # Initialize LLM
