@@ -25,7 +25,7 @@ st.set_page_config(
 
 LANGSMITH_KEY_NAME="langchain-api-key"
 REGIONS=["me-west1","europe-west4","us-central1","us-west1","us-east4"]
-MODEL_NAMES=['gemini-1.5-pro-preview-0409','gemini-1.0-pro-001','gemini-1.0-pro-002']
+MODEL_NAMES=['gemini-1.5-pro-001','gemini-1.5-flash-001','gemini-1.0-pro-002']
 
 def get_project_id():
     metadata_server_url = "http://metadata.google.internal/computeMetadata/v1/"
@@ -40,24 +40,26 @@ def get_project_id():
             return None
     except requests.RequestException as e:
         print(f"Error: {e}")
+        # return "landing-zone-demo-341118"
         return None
 
-PROJECT_ID=st.sidebar.text_input(label="Project ID",value="Your Project ID")
-if PROJECT_ID=="" or PROJECT_ID=="Your Project ID":
-    # print("getting project id")
-    PROJECT_ID=get_project_id()
+# PROJECT_ID=st.sidebar.text_input(label="Project ID",value="Your Project ID")
+# if PROJECT_ID=="" or PROJECT_ID=="Your Project ID":
+#     # print("getting project id")
+#     PROJECT_ID=get_project_id()
+project_id=get_project_id()
 
-st.sidebar.write("Project ID: ",f"{PROJECT_ID}") 
-project_id=PROJECT_ID
+st.sidebar.write("Project ID: ",f"{project_id}") 
+# project_id=PROJECT_ID
 region=st.sidebar.selectbox("Please enter the region",REGIONS)
 model_name = st.sidebar.selectbox('Enter model name',MODEL_NAMES)
 max_tokens = st.sidebar.slider('Enter max token output',min_value=1,max_value=8192,step=100,value=8192)
-temperature = st.sidebar.slider('Enter temperature',min_value=0.0,max_value=1.0,step=0.1,value=0.5)
+temperature = st.sidebar.slider('Enter temperature',min_value=0.0,max_value=2.0,step=0.1,value=1.0)
 top_p = st.sidebar.slider('Enter top_p',min_value=0.0,max_value=1.0,step=0.1,value=0.8)
-top_k = st.sidebar.slider('Enter top_k',min_value=1,max_value=40,step=1,value=40)
+# top_k = st.sidebar.slider('Enter top_k',min_value=1,max_value=40,step=1,value=40)
 
-if not ('32k' in model_name or 'gemini' in model_name) and max_tokens>1024:
-  st.error(f'{max_tokens} output tokens is not a valid value for model {model_name}')
+# if not ('32k' in model_name or 'gemini' in model_name) and max_tokens>1024:
+#   st.error(f'{max_tokens} output tokens is not a valid value for model {model_name}')
 
 # Initialize tracing variables
 tracing = st.sidebar.toggle('Enable Langsmith Tracing',disabled=True)
@@ -91,7 +93,7 @@ tab1, tab2, tab3, tab4, tab5= st.tabs(["Run Prompt / "
                                              
                                              ])
 
-llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p,top_k)
+llm = initialize_llm(project_id,region,model_name,max_tokens,temperature,top_p)
 
 with tab1:
     def promptExecutor(prompt):
@@ -113,7 +115,7 @@ with tab1:
     def display_result(execution_result):
         if execution_result != "":
             # st.markdown(f"**Execution Result:** {execution_result}")
-            st.code(execution_result)
+            st.text(execution_result)
         else:
             st.warning('No result to display.')
 
@@ -140,7 +142,7 @@ with tab2:
         if gcp_command != "":
             # st.markdown(f"**Generated GCP CLI Command:** {gcp_command}")
             st.markdown(f"**Generated GCP CLI Command:")
-            st.code(gcp_command)
+            st.text(gcp_command)
 
         else:
             st.markdown("No command generated. Please enter a valid GCP operation.")
@@ -160,6 +162,7 @@ with tab3:
         system_template = """You are a terraform expert capable of generating Terraform files based on the user's description."""
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
         human_template = """Please generate the appropriate Terraform files based on this description.
+                            Terraform modules are for Google Cloud provider
                             Use input variables as much a possible.
                             When makes sense,split the result into modules. Also, create the accompanying .tfvars file.
                             The user's description is: '{description}'"""
@@ -177,7 +180,7 @@ with tab3:
         if terraform_files:
             # st.markdown(f"### Generated Terraform Files: \n {terraform_files}")
             st.markdown(f"### Generated Terraform Files:")
-            st.code(terraform_files)
+            st.text(terraform_files)
         else:
             st.markdown("No Terraform files generated. Please provide a valid description.")        
 
@@ -245,7 +248,7 @@ with tab5:
         return result # returns string
     def display_tf(converted):
         if converted:
-             st.code(converted)
+             st.text(converted)
         else:
             st.markdown("Not found.")   
     
